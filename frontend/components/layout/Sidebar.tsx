@@ -12,12 +12,13 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-function NavLink({ item, depth = 0, openKey, onToggle, groupKey }: {
+function NavLink({ item, depth = 0, openKey, onToggle, groupKey, isChild = false }: {
   item: NavItem;
   depth?: number;
   openKey: string | null;
   onToggle: (key: string) => void;
   groupKey: string;
+  isChild?: boolean;
 }) {
   const pathname = usePathname();
   const { hasPermission } = useAuthStore();
@@ -47,7 +48,7 @@ function NavLink({ item, depth = 0, openKey, onToggle, groupKey }: {
         {isOpen && (
           <div className="ml-4 mt-1 space-y-1 border-l border-slate-200 pl-3">
             {visibleChildren.map((child) => (
-              <NavLink key={child.href} item={child} depth={depth + 1} openKey={openKey} onToggle={onToggle} groupKey={child.href ?? child.label} />
+              <NavLink key={child.href} item={child} depth={depth + 1} openKey={openKey} onToggle={onToggle} groupKey={child.href ?? child.label} isChild={true} />
             ))}
           </div>
         )}
@@ -60,6 +61,7 @@ function NavLink({ item, depth = 0, openKey, onToggle, groupKey }: {
   return (
     <Link
       href={item.href!}
+      onClick={() => !isChild && onToggle('')}
       className={cn(
         'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
         isActive
@@ -88,6 +90,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const [openKey, setOpenKey] = useState<string | null>(initialOpen);
 
   const handleToggle = (key: string) => {
+    if (key === '') { setOpenKey(null); return; }
     setOpenKey((prev) => (prev === key ? null : key));
   };
 
