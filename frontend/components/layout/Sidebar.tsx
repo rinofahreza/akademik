@@ -12,15 +12,15 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-function NavLink({ item, depth = 0 }: { item: NavItem; depth?: number }) {
+function NavLink({ item, depth = 0, openKey, onToggle, groupKey }: {
+  item: NavItem;
+  depth?: number;
+  openKey: string | null;
+  onToggle: (key: string) => void;
+  groupKey: string;
+}) {
   const pathname = usePathname();
   const { hasPermission } = useAuthStore();
-  const [open, setOpen] = useState(() => {
-    if (item.children) {
-      return item.children.some((child) => child.href === pathname);
-    }
-    return false;
-  });
 
   if (item.permission && !hasPermission(item.permission)) return null;
 
@@ -30,22 +30,24 @@ function NavLink({ item, depth = 0 }: { item: NavItem; depth?: number }) {
     );
     if (visibleChildren.length === 0) return null;
 
+    const isOpen = openKey === groupKey;
+
     return (
       <div>
         <button
-          onClick={() => setOpen(!open)}
+          onClick={() => onToggle(groupKey)}
           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
         >
           <span className="flex items-center gap-2">
             <item.icon size={16} />
             {item.label}
           </span>
-          {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
-        {open && (
+        {isOpen && (
           <div className="ml-4 mt-1 space-y-1 border-l border-slate-200 pl-3">
             {visibleChildren.map((child) => (
-              <NavLink key={child.href} item={child} depth={depth + 1} />
+              <NavLink key={child.href} item={child} depth={depth + 1} openKey={openKey} onToggle={onToggle} groupKey={child.href ?? child.label} />
             ))}
           </div>
         )}
@@ -72,6 +74,23 @@ function NavLink({ item, depth = 0 }: { item: NavItem; depth?: number }) {
 }
 
 export default function Sidebar({ onClose }: SidebarProps) {
+  const pathname = usePathname();
+
+  const initialOpen = () => {
+    for (const item of navConfig) {
+      if (item.children?.some((child) => child.href === pathname)) {
+        return item.label;
+      }
+    }
+    return null;
+  };
+
+  const [openKey, setOpenKey] = useState<string | null>(initialOpen);
+
+  const handleToggle = (key: string) => {
+    setOpenKey((prev) => (prev === key ? null : key));
+  };
+
   return (
     <div className="flex h-full flex-col bg-white border-r border-slate-200">
       <div className="flex h-16 items-center justify-between px-4 border-b border-slate-200">
@@ -92,7 +111,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         {navConfig.map((item, i) => (
-          <NavLink key={i} item={item} />
+          <NavLink key={i} item={item} openKey={openKey} onToggle={handleToggle} groupKey={item.label} />
         ))}
       </nav>
     </div>
