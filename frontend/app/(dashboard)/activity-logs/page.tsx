@@ -43,8 +43,20 @@ const EVENT_BADGES: Record<string, string> = {
 
 function parseUserAgent(ua: string | undefined): { device: string; icon: React.ReactNode } {
   if (!ua) return { device: '-', icon: <Globe size={13} /> };
-  if (/mobile|android|iphone|ipad/i.test(ua)) return { device: 'Mobile', icon: <Smartphone size={13} className="text-blue-500" /> };
-  return { device: 'Desktop', icon: <Monitor size={13} className="text-slate-500" /> };
+  const isMobile = /mobile|android|iphone|ipad/i.test(ua);
+  const icon = isMobile
+    ? <Smartphone size={13} className="text-blue-500" />
+    : <Monitor size={13} className="text-slate-500" />;
+
+  let browser = 'Browser';
+  if (/edg\//i.test(ua)) browser = 'Edge';
+  else if (/opr\//i.test(ua)) browser = 'Opera';
+  else if (/chrome\/[0-9]/i.test(ua) && !/chromium/i.test(ua)) browser = 'Chrome';
+  else if (/firefox\//i.test(ua)) browser = 'Firefox';
+  else if (/safari\//i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+  else if (/msie|trident/i.test(ua)) browser = 'IE';
+
+  return { device: browser, icon };
 }
 
 function EventBadge({ description }: { description: string }) {
