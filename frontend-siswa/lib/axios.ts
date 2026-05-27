@@ -20,7 +20,7 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('siswa_token');
       localStorage.removeItem('siswa_user');
-      window.location.href = '/login';
+      window.location.href = '/login?v=2';
     }
     return Promise.reject(err);
   }

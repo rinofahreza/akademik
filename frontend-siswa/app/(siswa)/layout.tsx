@@ -25,7 +25,7 @@ export default function SiswaLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!token) router.replace('/login');
+    if (!token) router.replace('/login?v=2');
   }, [hydrated, token, router]);
 
   if (!hydrated || !token) return null;
