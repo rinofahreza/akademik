@@ -112,4 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/activity-logs', [ActivityLogController::class, 'index']);
         Route::get('/activity-logs/log-names', [ActivityLogController::class, 'logNames']);
     });
+
+    // Siswa portal - akses berdasarkan relasi user->siswa
+    Route::get('/siswa-portal/profile', [SiswaController::class, 'myProfile']);
 });

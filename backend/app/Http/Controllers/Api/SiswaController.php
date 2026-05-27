@@ -170,4 +170,25 @@ class SiswaController extends Controller
 
         return response()->json(['message' => 'Siswa berhasil dihapus.']);
     }
+
+    public function myProfile(Request $request)
+    {
+        $user = $request->user();
+        $siswa = $user->siswa;
+
+        if (!$siswa) {
+            return response()->json(['message' => 'Akun ini tidak memiliki akses sebagai siswa.'], 403);
+        }
+
+        $tahunAjaranAktif = \App\Models\TahunAjaran::where('is_active', true)->first();
+        $tahunAjaranId = $tahunAjaranAktif?->id;
+
+        $siswa->load([
+            'tingkatPendidikan',
+            'kelasRecords' => fn($q) => $q->when($tahunAjaranId, fn($q) => $q->where('tahun_ajaran_id', $tahunAjaranId))->with(['kelas', 'tahunAjaran'])->orderBy('id', 'desc'),
+            'user',
+        ]);
+
+        return response()->json(['data' => $siswa]);
+    }
 }
